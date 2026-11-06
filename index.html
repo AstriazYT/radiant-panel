@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radiant - Panel de Gestion</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b0c10; color: #ffffff; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 28px; margin-bottom: 30px; border-bottom: 2px solid #ff416c; padding-bottom: 10px; }
+        .card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .card h2 { font-size: 18px; margin-bottom: 15px; color: #ff416c; }
+        label { display: block; margin-bottom: 8px; color: #8892b0; font-size: 14px; }
+        input[type="text"], textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; margin-bottom: 15px; font-size: 14px; }
+        .switch-container { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        button { background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .online { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Gestion - Radiant Survie</h1>
+
+        <!-- État du serveur -->
+        <div class="card">
+            <h2>État du Serveur</h2>
+            <p>Statut actuel : <span class="status-badge online">En ligne (Falix)</span></p>
+            <p style="margin-top: 10px; color: #8892b0; font-family: monospace;">IP : eu17-free.falixserver.net</p>
+        </div>
+
+        <!-- Gestion du Launcher (Config distante) -->
+        <div class="card">
+            <h2>Configuration du Launcher</h2>
+            
+            <div class="switch-container">
+                <input type="checkbox" id="maintenance-mode">
+                <label for="maintenance-mode" style="margin: 0; color: white; cursor: pointer;">Activer le mode maintenance du launcher</label>
+            </div>
+
+            <label for="announcement-text">Message d'annonce global :</label>
+            <textarea id="announcement-text" rows="3">Bienvenue sur Radiant Survie !</textarea>
+
+            <label for="latest-version">Dernière version obligatoire :</label>
+            <input type="text" id="latest-version" value="v1.0.4">
+
+            <button onclick="saveConfig()">Sauvegarder les modifications</button>
+        </div>
+    </div>
+
+    <script>
+        function saveConfig() {
+            const maintenance = document.getElementById('maintenance-mode').checked;
+            const announcement = document.getElementById('announcement-text').value;
+            const version = document.getElementById('latest-version').value;
+
+            // Objet de configuration à propager vers ton launcher
+            const newConfig = {
+                maintenance: maintenance,
+                announcement: announcement,
+                latestVersion: version
+            };
+
+            console.log("Config prête à être enregistrée :", newConfig);
+            alert("Configuration enregistrée ! (Pour l'automatiser, connecte ce bouton à ton API ou ton dépôt GitHub).");
+        }
+    </script>
+</body>
+</html>
