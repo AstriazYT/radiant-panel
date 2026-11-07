@@ -1,98 +1,589 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radiant - Panel de Gestion</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radiant – Gestion</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+body { background: #0b0c10; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.card { background: #15161c; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 24px; width: 100%; max-width: 520px; }
+h1 { font-size: 20px; letter-spacing: 3px; text-transform: uppercase; background: linear-gradient(90deg,#ff4b2b,#ff416c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+input { width: 100%; background: #0b0c10; color: #fff; border: 1px solid rgba(255,255,255,.12); border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 14px; }
+button { width: 100%; height: 44px; border: none; border-radius: 6px; background: linear-gradient(90deg,#ff4b2b,#ff416c); color: #fff; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+button.secondary { background: none; border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.7); height: 36px; font-size: 12px; width: auto; padding: 0 12px; letter-spacing: 0; text-transform: none; font-weight: 400; }
+.top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 14px; }
+.row:last-of-type { border-bottom: none; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #707070; margin-right: 8px; }
+.dot.on { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+.dot.off { background: #ff416c; }
+.muted { color: rgba(255,255,255,.5); font-size: 12px; }
+.error { color: #ff416c; font-size: 13px; min-height: 18px; margin-top: 8px; }
+.footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.hidden { display: none; }
+
+.wide { max-width: 760px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 14px 0 6px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.tab-btn { width: auto; height: 36px; background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; color: rgba(255,255,255,.55); font-size: 13px; font-weight: 600; letter-spacing: .3px; text-transform: none; padding: 0 12px; cursor: pointer; }
+.tab-btn.active { color: #fff; border-bottom-color: #ff416c; }
+.tab-btn:hover { color: #fff; }
+.tab-panel { padding-top: 6px; }
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,.45); margin: 18px 0 6px; }
+.field-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.field-row input { margin: 0; }
+.field-row input[type=file] { font-size: 12px; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+.modal.hidden { display: none; }
+.modal-box { background: #15161c; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 24px; max-width: 420px; width: 100%; }
+.modal-box h2 { font-size: 16px; margin-bottom: 10px; }
+.modal-box p { font-size: 13px; color: rgba(255,255,255,.75); line-height: 1.5; margin-bottom: 8px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+.modal-actions button { height: 40px; font-size: 12px; }
+.modal-actions button:first-child { flex: 1; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip { width: auto; height: 28px; padding: 0 12px; font-size: 12px; background: none; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; color: rgba(255,255,255,.6); cursor: pointer; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.chip.active { color: #fff; border-color: #ff416c; background: rgba(255,65,108,.12); }
+.chip:hover { color: #fff; }
+#logs { max-height: 440px; overflow-y: auto; padding-right: 4px; }
+.log-day { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,.4); margin: 16px 0 6px; }
+.log-day:first-child { margin-top: 4px; }
+.log-item { display: grid; grid-template-columns: 48px 70px 1fr; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,.025); border-left: 3px solid #5b8def; margin-bottom: 4px; font-size: 13px; }
+.log-item.falix { border-left-color: #ff416c; }
+.log-item.alert { border-left-color: #ff9800; }
+.log-time { font-family: Consolas, monospace; color: rgba(255,255,255,.45); font-size: 12px; }
+.log-badge { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,.55); }
+.log-item.alert .log-badge { color: #ff9800; }
+.log-item.falix .log-badge { color: #ff416c; }
+.log-item.site .log-badge { color: #5b8def; }
+.log-text { color: rgba(255,255,255,.9); word-break: break-word; }
+#console-out { background: #0b0c10; border: 1px solid rgba(255,255,255,.08); border-radius: 6px; padding: 10px; font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,.8); height: 300px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Panel de Gestion - Radiant Survie</h1>
 
-        <!-- Statut Serveur -->
-        <div class="card">
-            <h2>Statut du Serveur</h2>
-            <p>État : <span class="status-badge online">En ligne</span></p>
-            <p class="ip-info">IP : eu17-free.falixserver.net</p>
-        </div>
+<div class="card" id="login-box">
+  <h1>Radiant</h1>
+  <form id="login-form" style="margin-top:18px">
+    <input id="user" placeholder="Identifiant" autocomplete="username" required>
+    <input id="pass" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
+    <button type="submit">Se connecter</button>
+    <div class="error" id="login-error"></div>
+  </form>
+</div>
 
-        <!-- Formulaire de Configuration -->
-        <div class="card">
-            <h2>Configuration du Launcher</h2>
-            
-            <div class="switch-container">
-                <input type="checkbox" id="maintenance-mode">
-                <label for="maintenance-mode">Activer le mode maintenance</label>
-            </div>
-
-            <div class="form-group">
-                <label for="announcement-text">Message d'annonce global :</label>
-                <textarea id="announcement-text" rows="3" placeholder="Entrez votre message ici..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="latest-version">Dernière version du launcher :</label>
-                <input type="text" id="latest-version" placeholder="v1.0.4">
-            </div>
-
-            <div class="form-group">
-                <label for="admin-key">Clé d'administration (Mot de passe) :</label>
-                <input type="password" id="admin-key" placeholder="Entrez la clé secrète">
-            </div>
-
-            <button onclick="saveConfig()">Sauvegarder les modifications</button>
-        </div>
+<div class="card wide hidden" id="dash-box">
+  <div class="top">
+    <h1>Radiant</h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="secondary" id="logout">Déconnexion</button>
     </div>
+  </div>
 
-    <script>
-        // Charger la config actuelle au démarrage
-        fetch('../config.json?t=' + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('maintenance-mode').checked = data.maintenance || false;
-                document.getElementById('announcement-text').value = data.announcement || '';
-                document.getElementById('latest-version').value = data.latestVersion || 'v1.0.4';
-            })
-            .catch(() => console.log('Nouvelle config ou fichier introuvable.'));
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="home">Accueil</button>
+    <button class="tab-btn" data-tab="server">Serveur</button>
+    <button class="tab-btn" data-tab="launcher">Launcher</button>
+    <button class="tab-btn" data-tab="journal">Journal</button>
+    <button class="tab-btn" data-tab="admin">Gestion</button>
+  </nav>
 
-        // Envoyer la mise à jour au script PHP
-        async function saveConfig() {
-            const maintenance = document.getElementById('maintenance-mode').checked;
-            const announcement = document.getElementById('announcement-text').value;
-            const version = document.getElementById('latest-version').value;
-            const key = document.getElementById('admin-key').value;
+  <div class="error" id="g-error"></div>
 
-            if (!key) {
-                alert("Veuillez entrer la clé d'administration !");
-                return;
-            }
+  <section class="tab-panel" data-panel="home">
+    <div class="row"><span>Serveur Minecraft</span><span id="mc">…</span></div>
+    <div class="row"><span>Joueurs connectés</span><span id="players">…</span></div>
+    <div class="row"><span>Statut Falix</span><span id="falix">…</span></div>
+    <div class="footer">
+      <span class="muted" id="updated"></span>
+      <button class="secondary" id="refresh">Actualiser</button>
+    </div>
+    <div class="error" id="dash-error"></div>
+  </section>
 
-            const payload = {
-                key: key,
-                maintenance: maintenance,
-                announcement: announcement,
-                latestVersion: version,
-                downloadUrl: "https://github.com/AstriazYT/minecraft-rubis-launcher/releases/latest/download/radiant-launcher.exe"
-            };
+  <section class="tab-panel hidden" data-panel="server">
+    <div class="section-title">Alimentation</div>
+    <div class="row" style="gap:8px;justify-content:flex-start;border-bottom:none">
+      <button class="secondary" data-power="start">Démarrer</button>
+      <button class="secondary" data-power="restart">Redémarrer</button>
+      <button class="secondary" data-power="stop">Arrêter</button>
+    </div>
+    <div class="section-title">Console</div>
+    <datalist id="cmd-list">
+      <option value="help"><option value="list"><option value="say "><option value="tell ">
+      <option value="save-all"><option value="save-off"><option value="save-on"><option value="stop">
+      <option value="reload"><option value="op "><option value="deop "><option value="kick ">
+      <option value="ban "><option value="ban-ip "><option value="pardon ">
+      <option value="whitelist list"><option value="whitelist add "><option value="whitelist remove ">
+      <option value="whitelist on"><option value="whitelist off"><option value="whitelist reload">
+      <option value="gamemode survival "><option value="gamemode creative "><option value="gamemode spectator ">
+      <option value="difficulty peaceful"><option value="difficulty easy"><option value="difficulty normal"><option value="difficulty hard">
+      <option value="time set day"><option value="time set night"><option value="weather clear"><option value="weather rain">
+      <option value="give @p "><option value="effect give "><option value="clear "><option value="kill ">
+      <option value="tp "><option value="xp add "><option value="gamerule keepInventory true"><option value="gamerule keepInventory false">
+      <option value="setworldspawn"><option value="seed"><option value="title @a title ">
+    </datalist>
+    <div class="field-row"><input id="cmd" list="cmd-list" placeholder="ex. gamemode creative Pseudo"><button class="secondary" id="cmd-send">Envoyer</button></div>
+    <div class="muted" style="padding:6px 0">Toute commande Minecraft est acceptée (sans le /). Les commandes sensibles demandent une confirmation.</div>
+    <div class="footer" style="margin-top:14px">
+      <span class="section-title" style="margin:0">Réponse de la console</span>
+      <button class="secondary" id="console-refresh">Actualiser</button>
+    </div>
+    <pre id="console-out">Chargement…</pre>
+  </section>
 
-            try {
-                const response = await fetch('api/update.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+  <section class="tab-panel hidden" data-panel="launcher">
+    <div class="row"><span>Version (package.json)</span><span id="l-version">…</span></div>
+    <div class="row"><span>Dernière release</span><span id="l-release">…</span></div>
+    <div class="row"><span>Mods</span><span id="l-count">…</span></div>
+    <ul id="l-mods" style="list-style:none;font-size:13px;color:rgba(255,255,255,.7);padding:8px 0 0"></ul>
+    <div class="error" id="l-error"></div>
+  </section>
 
-                const result = await response.json();
-                if (result.success) {
-                    alert("Configuration sauvegardée avec succès !");
-                } else {
-                    alert("Erreur : " + result.message);
-                }
-            } catch (err) {
-                alert("Erreur de connexion au serveur.");
-            }
+  <section class="tab-panel hidden" data-panel="journal">
+    <div class="footer" style="margin-top:0">
+      <span class="muted" id="logs-status"></span>
+      <button class="secondary" id="logs-refresh">Actualiser</button>
+    </div>
+    <div class="chips" id="log-chips">
+      <button class="chip active" data-filter="all">Tout</button>
+      <button class="chip" data-filter="site">Site</button>
+      <button class="chip" data-filter="falix">Serveur</button>
+      <button class="chip" data-filter="alert">Alertes</button>
+    </div>
+    <div id="logs"></div>
+  </section>
+
+  <section class="tab-panel hidden" data-panel="admin">
+    <div id="totp-setup" class="hidden" style="font-size:13px;color:rgba(255,255,255,.7);padding-bottom:10px">
+      <p>Double authentification non configurée. Elle est requise pour toute modification.</p>
+      <button class="secondary" id="totp-new" style="margin:8px 0">Générer une clé</button>
+      <p id="totp-secret" style="word-break:break-all;color:#fff"></p>
+      <p class="muted">Ajoute cette clé dans Google Authenticator (saisie manuelle, compte « Radiant »), puis mets-la dans Render sous <b>TOTP_SECRET</b>. Elle ne sera plus affichée ensuite.</p>
+    </div>
+    <div class="section-title">Launcher</div>
+    <div class="field-row"><input id="new-version" placeholder="Nouvelle version (ex. 1.0.4)"><button class="secondary" id="publish">Publier</button></div>
+    <div class="field-row"><input id="mod-file" type="file" accept=".jar"><button class="secondary" id="mod-add">Ajouter le mod</button></div>
+    <div class="section-title">Suivi des joueurs</div>
+    <div class="field-row"><button class="secondary" id="hooks-create">Activer le suivi des joueurs</button></div>
+  </section>
+</div>
+
+<div id="totp-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2 id="totp-title">Confirmation</h2>
+    <p id="totp-warning" style="color:#ff9800;min-height:0"></p>
+    <input id="totp-input" inputmode="numeric" maxlength="6" placeholder="Code à 6 chiffres" autocomplete="one-time-code" style="font-size:18px;letter-spacing:4px;text-align:center">
+    <div class="modal-actions">
+      <button id="totp-ok">Confirmer</button>
+      <button class="secondary" id="totp-cancel">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div id="verify-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Vérification Falix requise</h2>
+    <p>Le plan gratuit demande une vérification rapide avant cette action. Ouvre-la dans ton navigateur, connecté à ton compte Falix, puis relance l'action dans les 5 minutes.</p>
+    <p class="muted" id="verify-timer"></p>
+    <div class="modal-actions">
+      <button id="verify-open">Ouvrir la vérification</button>
+      <button class="secondary" id="verify-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || 'Erreur ' + res.status);
+    err.actionUrl = data.action_url || null;
+    throw err;
+  }
+  return data;
+}
+
+function showDash(on) {
+  $('login-box').classList.toggle('hidden', on);
+  $('dash-box').classList.toggle('hidden', !on);
+}
+
+async function load() {
+  $('dash-error').textContent = '';
+  try {
+    const d = await api('/api/dashboard');
+    const mc = d.minecraft;
+
+    const dot = document.createElement('span');
+    dot.className = 'dot ' + (mc.online ? 'on' : 'off');
+    $('mc').replaceChildren(dot, document.createTextNode(mc.online ? 'En ligne' : 'Hors ligne'));
+    $('players').textContent = mc.players + ' / ' + mc.max;
+
+    $('falix').textContent = d.falix.ok
+      ? (d.falix.lifecycle || 'inconnu')
+      : 'indisponible (' + d.falix.code + ')';
+
+    $('updated').textContent = 'Mis à jour : ' + new Date(d.updatedAt).toLocaleTimeString('fr-FR');
+  } catch (e) {
+    if (e.message.includes('Non connecté')) return showDash(false);
+    $('dash-error').textContent = e.message;
+  }
+}
+
+$('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('login-error').textContent = '';
+  try {
+    await api('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({ username: $('user').value, password: $('pass').value })
+    });
+    $('pass').value = '';
+    showDash(true);
+    load();
+    loadLauncher();
+    checkTotpStatus();
+    loadLogs();
+  } catch (err) {
+    $('login-error').textContent = err.message;
+  }
+});
+
+$('logout').addEventListener('click', async () => {
+  await api('/api/logout', { method: 'POST' }).catch(() => {});
+  showDash(false);
+});
+
+async function loadLauncher() {
+  $('l-error').textContent = '';
+  try {
+    const d = await api('/api/launcher');
+    $('l-version').textContent = d.version || 'inconnue';
+    $('l-release').textContent = d.latestRelease || 'aucune';
+    $('l-count').textContent = d.mods.length + ' fichier(s)';
+    const ul = $('l-mods');
+    ul.replaceChildren();
+    d.mods.forEach((m) => {
+      const li = document.createElement('li');
+      li.textContent = m.name + ' (' + Math.round(m.size / 1024) + ' Ko)';
+      const del = document.createElement('button');
+      del.className = 'secondary';
+      del.textContent = 'Retirer';
+      del.style.cssText = 'height:26px;margin-left:8px';
+      del.addEventListener('click', async () => {
+        if (!confirm('Retirer ' + m.name + ' du dépôt ? Les joueurs qui l\'ont déjà le gardent.')) return;
+        if (await writeAction('/api/mods/delete', { name: m.name })) {
+          gMsg('Mod retiré.', true);
+          loadLauncher();
         }
-    </script>
+      });
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  } catch (e) {
+    if (!e.message.includes('Non connecté')) $('l-error').textContent = e.message;
+  }
+}
+
+function gMsg(text, ok, link) {
+  const el = $('g-error');
+  el.textContent = text;
+  el.style.color = ok ? '#4caf50' : '#ff416c';
+  if (link) {
+    el.appendChild(document.createElement('br'));
+    const a = document.createElement('a');
+    a.href = link;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = 'Ouvrir la vérification Falix';
+    a.style.color = '#fff';
+    a.style.textDecoration = 'underline';
+    el.appendChild(a);
+  }
+}
+
+// Envoie une action protégée par le code TOTP
+function askTotp(title, warning) {
+  return new Promise((resolve) => {
+    $('totp-title').textContent = title;
+    $('totp-warning').textContent = warning || '';
+    $('totp-input').value = '';
+    $('totp-modal').classList.remove('hidden');
+    setTimeout(() => $('totp-input').focus(), 50);
+
+    const finish = (value) => {
+      $('totp-modal').classList.add('hidden');
+      $('totp-ok').removeEventListener('click', onOk);
+      $('totp-cancel').removeEventListener('click', onCancel);
+      $('totp-input').removeEventListener('keydown', onKey);
+      resolve(value);
+    };
+    const onOk = () => {
+      const v = $('totp-input').value.trim();
+      if (!/^\d{6}$/.test(v)) { $('totp-warning').textContent = 'Code à 6 chiffres requis.'; return; }
+      finish(v);
+    };
+    const onCancel = () => finish(null);
+    const onKey = (e) => { if (e.key === 'Enter') onOk(); if (e.key === 'Escape') onCancel(); };
+
+    $('totp-ok').addEventListener('click', onOk);
+    $('totp-cancel').addEventListener('click', onCancel);
+    $('totp-input').addEventListener('keydown', onKey);
+  });
+}
+
+function showActionError(e) {
+  if (e.actionUrl) { gMsg('Vérification Falix requise.', false); showVerify(e.actionUrl); }
+  else gMsg(e.message, false);
+}
+
+async function writeAction(path, body, title) {
+  const totp = await askTotp(title || 'Confirme avec ton code', '');
+  if (!totp) return false;
+  try {
+    await api(path, { method: 'POST', body: JSON.stringify({ ...body, totp }) });
+    return true;
+  } catch (e) {
+    showActionError(e);
+    return false;
+  }
+}
+
+async function checkTotpStatus() {
+  const s = await api('/api/totp/status').catch(() => ({ configured: true }));
+  $('totp-setup').classList.toggle('hidden', s.configured);
+}
+
+$('totp-new').addEventListener('click', async () => {
+  const d = await api('/api/totp/new').catch((e) => ({ error: e.message }));
+  $('totp-secret').textContent = d.secret || d.error;
+});
+
+$('publish').addEventListener('click', async () => {
+  const v = $('new-version').value.trim();
+  if (!/^\d+\.\d+\.\d+$/.test(v)) return gMsg('Version invalide (format 1.2.3).', false);
+  if (!confirm('Publier la version ' + v + ' ? Les joueurs recevront le launcher mis à jour.')) return;
+  if (await writeAction('/api/release', { version: v })) {
+    $('new-version').value = '';
+    gMsg('Tag v' + v + ' créé. Le build démarre sur GitHub (environ 3 minutes).', true);
+    loadLauncher();
+  }
+});
+
+$('mod-add').addEventListener('click', async () => {
+  const file = $('mod-file').files[0];
+  if (!file) return gMsg('Choisis un fichier .jar.', false);
+  if (file.size > 25 * 1024 * 1024) return gMsg('Mod trop lourd (maximum 25 Mo).', false);
+  if (!confirm('Ajouter ou mettre à jour ' + file.name + ' ? Les joueurs le recevront au prochain lancement du jeu.')) return;
+  const content = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  if (await writeAction('/api/mods/add', { name: file.name, content })) {
+    $('mod-file').value = '';
+    gMsg('Mod envoyé sur GitHub.', true);
+    loadLauncher();
+  }
+});
+
+document.querySelectorAll('[data-power]').forEach((b) => {
+  b.addEventListener('click', async () => {
+    const sig = b.dataset.power;
+    const labels = { start: 'démarrer', stop: 'arrêter', restart: 'redémarrer' };
+    if (!confirm('Confirmer : ' + labels[sig] + ' le serveur Minecraft ?')) return;
+    if (await writeAction('/api/falix/power', { signal: sig })) {
+      gMsg('Signal « ' + labels[sig] + ' » envoyé au serveur.', true);
+    }
+  });
+});
+
+const SAFE_CMDS = ['help', 'list', 'say', 'tell', 'msg', 'me', 'seed', 'save-all', 'save-on', 'save-off'];
+
+$('cmd-send').addEventListener('click', async () => {
+  const c = $('cmd').value.trim().replace(/^\//, '').trim();
+  if (!c) return gMsg('Écris une commande.', false);
+  const first = c.split(' ')[0].toLowerCase();
+  const body = { command: c };
+
+  if (!SAFE_CMDS.includes(first)) {
+    const warn = SENSITIVE.includes(first) ? 'Commande sensible : ' + first + '. Vérifie avant de confirmer.' : '';
+    const totp = await askTotp('Envoyer : ' + c, warn);
+    if (!totp) return;
+    body.totp = totp;
+  }
+
+  try {
+    await api('/api/falix/command', { method: 'POST', body: JSON.stringify(body) });
+    $('cmd').value = '';
+    gMsg('Commande envoyée.', true);
+    setTimeout(loadConsole, 1500);
+  } catch (e) {
+    showActionError(e);
+  }
+});
+
+const SENSITIVE = ['stop', 'op', 'deop', 'ban', 'ban-ip', 'kill', 'reload'];
+
+let logEntries = [];
+let logFilter = 'all';
+
+function logKind(e) {
+  if (e.text.toLowerCase().includes('échec')) return 'alert';
+  return e.src === 'falix' ? 'falix' : 'site';
+}
+
+function matchesFilter(e) {
+  if (logFilter === 'all') return true;
+  if (logFilter === 'alert') return logKind(e) === 'alert';
+  return e.src === logFilter;
+}
+
+function dayLabel(date) {
+  const yest = new Date(Date.now() - 86400000);
+  if (date.toDateString() === new Date().toDateString()) return "Aujourd'hui";
+  if (date.toDateString() === yest.toDateString()) return 'Hier';
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+}
+
+function renderLogs() {
+  const box = $('logs');
+  box.replaceChildren();
+  const items = logEntries.filter(matchesFilter);
+  $('logs-status').textContent = items.length ? items.length + ' entrée(s)' : 'Aucune entrée pour ce filtre.';
+
+  let lastDay = null;
+  items.forEach((e) => {
+    const date = new Date(e.ts);
+    const day = dayLabel(date);
+    if (day !== lastDay) {
+      const d = document.createElement('div');
+      d.className = 'log-day';
+      d.textContent = day;
+      box.appendChild(d);
+      lastDay = day;
+    }
+    const kind = logKind(e);
+    const row = document.createElement('div');
+    row.className = 'log-item ' + kind;
+
+    const time = document.createElement('span');
+    time.className = 'log-time';
+    time.textContent = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    const badge = document.createElement('span');
+    badge.className = 'log-badge';
+    badge.textContent = kind === 'alert' ? 'Alerte' : (e.src === 'falix' ? 'Serveur' : 'Site');
+
+    const text = document.createElement('span');
+    text.className = 'log-text';
+    text.textContent = e.text;
+
+    row.append(time, badge, text);
+    box.appendChild(row);
+  });
+}
+
+async function loadLogs() {
+  try {
+    const d = await api('/api/logs');
+    logEntries = d.entries;
+    renderLogs();
+  } catch (err) {
+    if (!err.message.includes('Non connecté')) $('logs-status').textContent = err.message;
+  }
+}
+
+document.querySelectorAll('#log-chips .chip').forEach((c) => {
+  c.addEventListener('click', () => {
+    logFilter = c.dataset.filter;
+    document.querySelectorAll('#log-chips .chip').forEach((x) => x.classList.toggle('active', x === c));
+    renderLogs();
+  });
+});
+
+$('logs-refresh').addEventListener('click', loadLogs);
+
+$('hooks-create').addEventListener('click', async () => {
+  if (!confirm('Activer le suivi des connexions joueurs sur ce serveur ?')) return;
+  const totp = await askTotp('Activer le suivi des joueurs', '');
+  if (!totp) return;
+  try {
+    const d = await api('/api/falix/hooks/create', { method: 'POST', body: JSON.stringify({ totp }) });
+    gMsg(d.message, true);
+    if (d.secret) alert('Secret à copier dans Render (FALIX_WEBHOOK_SECRET) :\n\n' + d.secret);
+  } catch (e) {
+    showActionError(e);
+  }
+});
+
+$('refresh').addEventListener('click', () => { load(); loadLauncher(); loadLogs(); });
+
+
+function showTab(name) {
+  const valid = ['home', 'server', 'launcher', 'journal', 'admin'];
+  if (!valid.includes(name)) name = 'home';
+  document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== name));
+  history.replaceState(null, '', '#' + name);
+}
+document.querySelectorAll('.tab-btn').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+let verifyTimer = null;
+
+function showVerify(url) {
+  $('verify-modal').classList.remove('hidden');
+  $('verify-open').onclick = () => window.open(url, '_blank', 'noopener');
+  let left = 300;
+  clearInterval(verifyTimer);
+  const tick = () => {
+    if (left <= 0) {
+      $('verify-timer').textContent = 'Délai dépassé : ferme cette fenêtre et relance l\'action.';
+      clearInterval(verifyTimer);
+      return;
+    }
+    const m = Math.floor(left / 60), s = String(left % 60).padStart(2, '0');
+    $('verify-timer').textContent = "Temps restant pour relancer l'action : " + m + ':' + s;
+    left--;
+  };
+  tick();
+  verifyTimer = setInterval(tick, 1000);
+}
+
+$('verify-close').addEventListener('click', () => $('verify-modal').classList.add('hidden'));
+
+async function loadConsole() {
+  try {
+    const d = await api('/api/falix/console');
+    const pre = $('console-out');
+    pre.textContent = d.text || '(console vide)';
+    pre.scrollTop = pre.scrollHeight;
+  } catch (e) {
+    if (!e.message.includes('Non connecté')) $('console-out').textContent = e.message;
+  }
+}
+
+$('console-refresh').addEventListener('click', loadConsole);
+
+// Rafraîchit la console toutes les 5 s, seulement quand l'onglet Serveur est ouvert
+setInterval(() => {
+  if (!$('dash-box').classList.contains('hidden') && !$('console-out').closest('.tab-panel.hidden')) loadConsole();
+}, 5000);
+
+(async () => {
+  const me = await api('/api/me').catch(() => ({ loggedIn: false }));
+  showDash(me.loggedIn);
+  if (me.loggedIn) { showTab(location.hash.slice(1)); load(); loadLauncher(); checkTotpStatus(); loadLogs(); loadConsole(); }
+  setInterval(() => { if (!$('dash-box').classList.contains('hidden')) loadLogs(); }, 60000);
+  setInterval(() => {
+    if (!$('dash-box').classList.contains('hidden')) load();
+  }, 30000);
+})();
+</script>
 </body>
 </html>
